@@ -4,20 +4,41 @@ using UnityEngine;
 
 public class MovimentoBola : MonoBehaviour
 {
-    public float velocidade = 5;
+    GameManager gm;
+    public float velocidade = 7.14f;
+    public bool spacePressed;
     private Vector3 direcao;
     private AudioSource soundEffect;
     private Animator anim;
+    private SpriteRenderer arrow;
+    private GameObject arrowChild;
+    public float rotation;
+    public bool clockwise;
 
-    GameManager gm;
+    Renderer rend;
+
+
+    
     // Start is called before the first frame update
     void Start()
-    {
+    {   
+        arrow = GetComponent<SpriteRenderer>();
+        arrowChild = GameObject.Find("Arrow");
+
+       rend = arrowChild.GetComponent<Renderer>();
+
+        transform.Rotate(0.0f, 0.0f, 0.15f);    
+
+        rotation = transform.eulerAngles.z;
+        clockwise = false;
+
         float dirX = Random.Range(-5.0f, 5.0f);
         float dirY = Random.Range(1.0f, 5.0f);
 
         soundEffect = GetComponent<AudioSource>();
-        anim = GetComponent<Animator>();
+        // anim = GetComponent<Animator>();
+
+        spacePressed = false;
 
         direcao = new Vector3(dirX, dirY).normalized;
 
@@ -27,9 +48,46 @@ public class MovimentoBola : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (gm.gameState != GameManager.GameState.GAME) return;
+        rotation = transform.eulerAngles.z;
+
+        if(rotation > 175) {
+            clockwise = true;
+        } else if (rotation  < 5) {
+            clockwise = false;
+        }
+
+        if(rotation < 175 && !clockwise) {
+            transform.Rotate(0.0f, 0.0f, 0.15f); 
+        } else if (rotation > 0 && rotation < 179 && clockwise) {
+            transform.Rotate(0.0f, 0.0f, -0.15f);
+        }
+        
+
+        
+
+        Debug.Log($"Rotação: {rend.bounds.max.x}");
+
+        if (gm.gameState != GameManager.GameState.GAME)
+        {
+            spacePressed = false;
+            return;
+        } 
         // leave spin or jump to complete before changing
-    
+
+        if(!spacePressed) 
+        {
+            float inputX = Input.GetAxis("Horizontal");
+            transform.position += new Vector3(inputX, 0, 0)*Time.deltaTime*velocidade;
+            direcao = new Vector3(arrowChild.transform.position.x, -arrowChild.transform.position.y).normalized;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            spacePressed = true;
+            arrowChild.SetActive(false);
+        } 
+
+        if (!spacePressed) return;
+
         transform.position += direcao * Time.deltaTime * velocidade;
     
         Vector2 posicaoViewport = Camera.main.WorldToViewportPoint(transform.position);
@@ -46,7 +104,7 @@ public class MovimentoBola : MonoBehaviour
             Reset();
         }
 
-        Debug.Log($"Vidas: {gm.vidas} \t | \t Pontos: {gm.pontos}");
+        // Debug.Log($"Vidas: {gm.vidas} \t | \t Pontos: {gm.pontos}");
     }
 
     private void Reset() 
@@ -54,10 +112,11 @@ public class MovimentoBola : MonoBehaviour
         Vector3 playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position;
         transform.position = playerPosition + new Vector3(0, 0.5f, 0);
 
-        float dirX = Random.Range(-5.0f, 5.0f);
-        float dirY = Random.Range(1.0f, 5.0f);
+        // float dirX = Random.Range(-5.0f, 5.0f);
+        // float dirY = Random.Range(1.0f, 5.0f);
 
-        direcao = new Vector3(dirX, dirY).normalized;
+        arrowChild.SetActive(true);
+        spacePressed = false;
         gm.vidas--;
 
         if(gm.vidas <= 0 && gm.gameState == GameManager.GameState.GAME)
