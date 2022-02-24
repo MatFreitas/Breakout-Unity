@@ -14,8 +14,7 @@ public class MovimentoBola : MonoBehaviour
     private GameObject arrowChild;
     public float rotation;
     public bool clockwise;
-
-    Renderer rend;
+    public Vector3 direction;
 
 
     
@@ -24,8 +23,6 @@ public class MovimentoBola : MonoBehaviour
     {   
         arrow = GetComponent<SpriteRenderer>();
         arrowChild = GameObject.Find("Arrow");
-
-       rend = arrowChild.GetComponent<Renderer>();
 
         transform.Rotate(0.0f, 0.0f, 0.15f);    
 
@@ -65,7 +62,7 @@ public class MovimentoBola : MonoBehaviour
 
         
 
-        Debug.Log($"Rotação: {rend.bounds.max.x}");
+        Debug.Log($"Rotação: {direction.x}");
 
         if (gm.gameState != GameManager.GameState.GAME)
         {
@@ -78,7 +75,9 @@ public class MovimentoBola : MonoBehaviour
         {
             float inputX = Input.GetAxis("Horizontal");
             transform.position += new Vector3(inputX, 0, 0)*Time.deltaTime*velocidade;
-            direcao = new Vector3(arrowChild.transform.position.x, -arrowChild.transform.position.y).normalized;
+
+            direction =  arrowChild.transform.position - transform.position;
+            direcao = new Vector3(direction.x, direction.y).normalized;
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) {
