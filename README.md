@@ -11,3 +11,5 @@ Unity Project that aims to recreate classic breakout game, with a few extra func
 ## JAM Link (Itch.io)
 
 `https://matfreitas.itch.io/cloud-breakout`
+
+![Breakout Game Image](Breakout.png "Cloud Breakout")
